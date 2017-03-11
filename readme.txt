@@ -14,3 +14,8 @@ https://docs.oracle.com/cd/E19798-01/821-1751/ghlgv/index.html
 
 Budowanie projektu:
 mvn install
+
+<dependency>
+	<groupId>com.tolean</groupId>
+	<artifactId>pdfsigner</artifactId>
+</dependency>
