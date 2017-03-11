@@ -7,7 +7,6 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.security.*;
 
 import java.io.FileOutputStream;
@@ -15,12 +14,9 @@ import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 
-/**
- * Created by TOLEAN on 31.10.16.
- */
 public class PdfSigner {
 
-    private CertificateUtil certificateUtil;
+    private CertificateManager certificateManager;
     private KeyStore keyStore;
 
     private String keyStorePath;
@@ -33,7 +29,7 @@ public class PdfSigner {
 
     public PdfSigner() {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-        certificateUtil = new CertificateUtil();
+        certificateManager = new CertificateManager();
     }
 
     public PdfSigner withKeyStore(final String keyStorePath, final String keyStorePassword) {
@@ -51,40 +47,6 @@ public class PdfSigner {
         this.privateKeyAlias = privateKeyAlias;
         this.privateKeyPassword = privateKeyPassword;
         return this;
-    }
-
-    public void encrypt(final String sourcePdf, final String destinationPdf) throws IOException, DocumentException, CertificateException {
-        if (sourcePdf == null || sourcePdf.isEmpty()) {
-            throw new IllegalArgumentException("Source is required.");
-        }
-
-        if (destinationPdf == null || destinationPdf.isEmpty()) {
-            throw new IllegalArgumentException("Destination is required.");
-        }
-
-        PdfReader reader = new PdfReader(sourcePdf);
-        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(destinationPdf));
-        java.security.cert.Certificate cert = certificateUtil.getPublicCertificate(publicCertificatePath);
-        stamper.setEncryption(new java.security.cert.Certificate[]{cert}, new int[]{ PdfWriter.ALLOW_PRINTING }, PdfWriter.ENCRYPTION_AES_128);
-        stamper.close();
-        reader.close();
-    }
-
-    public void decrypt(final String sourcePdf, final String destinationPdf) throws IOException, GeneralSecurityException, DocumentException {
-        if (sourcePdf == null || sourcePdf.isEmpty()) {
-            throw new IllegalArgumentException("Source is required.");
-        }
-
-        if (destinationPdf == null || destinationPdf.isEmpty()) {
-            throw new IllegalArgumentException("Destination is required.");
-        }
-
-        java.security.cert.Certificate publicCertificate = certificateUtil.getPublicCertificate(publicCertificatePath);
-        PrivateKey privateKey = getPrivateKey();
-        PdfReader reader = new PdfReader(sourcePdf, publicCertificate, privateKey, "BC");
-        PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(destinationPdf));
-        stamper.close();
-        reader.close();
     }
 
     public void sign(String sourcePdf, String destinationPdf, String imagePath, int[] imageRectanglePosition) throws GeneralSecurityException, IOException, DocumentException {
@@ -132,14 +94,14 @@ public class PdfSigner {
     }
 
     private PrivateKey getPrivateKey() throws GeneralSecurityException, IOException {
-        return certificateUtil.getPrivateKey(getKeyStore(), privateKeyAlias, privateKeyPassword);
+        return certificateManager.getPrivateKey(getKeyStore(), privateKeyAlias, privateKeyPassword);
     }
 
     private KeyStore getKeyStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         if (keyStore != null) {
             return keyStore;
         } else {
-            keyStore = certificateUtil.getKeyStore(keyStorePath, keyStorePassword);
+            keyStore = certificateManager.loadKeyStore(keyStorePath, keyStorePassword);
         }
         return keyStore;
     }

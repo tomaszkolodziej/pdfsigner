@@ -1,9 +1,16 @@
-https://www.sslshopper.com/article-most-common-java-keytool-keystore-commands.html
-
 1. Utworzyc keystore:
-	
-2. Utworzyc klucz.
-	keytool -genkeypair -alias mydomain -keyalg RSA
-3. Klucz dodac do keystore.
-4. Umiescic wszystkie pliki z katalogu "resources" do katalogu "c:\pdfsigner" (wymagane przez testy).
-5.
+	keytool -genkey -alias tolean -keyalg RSA -keystore keystore.jks -keysize 2048
+
+2. Utworzyc klucz:
+	keytool -genkeypair -alias tkolodziej -keyalg RSA -keystore keystore.jks
+	(jesli nie bedzie argumentu -keystore, to doda do aktualnego keystora)
+
+3. Wyeksportowac certyfikat z keystora:
+    keytool -export -alias tkolodziej -file tkolodziej.cer -keystore keystore.jks
+
+Linki:
+https://www.sslshopper.com/article-most-common-java-keytool-keystore-commands.html
+https://docs.oracle.com/cd/E19798-01/821-1751/ghlgv/index.html
+
+Budowanie projektu:
+mvn install
